@@ -8,6 +8,7 @@ use Redirect;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\PostFormRequest;
 use Carbon\Carbon;
+use Elasticsearch;
 
 use Illuminate\Http\Request;
 
@@ -23,6 +24,17 @@ class PostController extends Controller {
 	 */
 	public function index()
 	{
+		$data = [
+			'body' => [
+				'testField' => 'abc'
+			],
+			'index' => 'blog',
+			'type' => 'post',
+			'id' => '1',
+		];
+
+		$return = Elasticsearch::index($data);
+		
 		$posts = Posts::latest()->paginate(5);
 		$title = 'Latest Posts';
 		return view('home',compact('posts', 'title'));
@@ -175,7 +187,7 @@ class PostController extends Controller {
 			$post->save();
 
 
-	 		return redirect($landing)->withMessage($message);
+			return redirect($landing)->withMessage($message);
 		}
 		else
 		{

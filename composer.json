@@ -8,10 +8,13 @@
 		"laravel/framework": "5.1.*",
 		"illuminate/html": "*",
 		"elasticsearch/elasticsearch": "~2.0@beta",
+		"monolog/monolog": "~1.0",
 		"fzaninotto/faker": "^1.5",
-		"mockery/mockery": "dev-master@dev"
+		"hamcrest/hamcrest-php": "^2.0@dev",
+		"cviebrock/laravel-elasticsearch": "^1.0"
 	},
 	"require-dev": {
+		"mockery/mockery": "dev-master@dev",
 		"phpunit/phpunit": "~4.0",
 		"phpspec/phpspec": "~2.1"
 	},

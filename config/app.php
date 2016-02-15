@@ -145,7 +145,7 @@ return [
 		'App\Providers\ConfigServiceProvider',
 		'App\Providers\EventServiceProvider',
 		'App\Providers\RouteServiceProvider',
-
+		'Cviebrock\LaravelElasticsearch\ServiceProvider',
 	],
 
 	/*
@@ -196,6 +196,7 @@ return [
 		'Form'      => 'Illuminate\Html\FormFacade',
 		'HTML'      => 'Illuminate\Html\HtmlFacade',
 		'Carbon'    => 'Carbon\Carbon',
+		'Elasticsearch' => 'Cviebrock\LaravelElasticsearch\Facade',
 
 	],
 

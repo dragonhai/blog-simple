@@ -115,7 +115,6 @@ trait AuthenticatesUsers
      */
     public function getLogout()
     {
-        echo 893;
         Auth::logout();
 
         return redirect(property_exists($this, 'redirectAfterLogout') ? $this->redirectAfterLogout : '/');
