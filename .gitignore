@@ -1,0 +1,15 @@
+# ignore environment
+# required for setup
+.env
+
+# ignore vendor
+./vendor
+
+# ignore node_modules
+./node_modules
+
+# ignore composer.lock
+composer.lock
+
+# ignore css
+./public/css
