@@ -1,5 +1,4 @@
 # Simple Blog applicatoin in Laravel
-### stand by https://sweet-blog.herokuapp.com/
 ------------
 what is application?
 * It is simple blogging app.

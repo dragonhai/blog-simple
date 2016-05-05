@@ -35,7 +35,6 @@ class MockConfigurationBuilder
     protected $instanceMock = false;
     protected $parameterOverrides = array();
 
-    protected $mockOriginalDestructor = false;
     protected $targets = array();
 
     public function addTarget($target)
@@ -110,12 +109,6 @@ class MockConfigurationBuilder
         $this->parameterOverrides = $overrides;
     }
 
-    public function setMockOriginalDestructor($mockDestructor)
-    {
-        $this->mockOriginalDestructor = $mockDestructor;
-        return $this;
-    }
-
     public function getMockConfiguration()
     {
         return new MockConfiguration(
@@ -124,8 +117,7 @@ class MockConfigurationBuilder
             $this->whiteListedMethods,
             $this->name,
             $this->instanceMock,
-            $this->parameterOverrides,
-            $this->mockOriginalDestructor
+            $this->parameterOverrides
         );
     }
 }

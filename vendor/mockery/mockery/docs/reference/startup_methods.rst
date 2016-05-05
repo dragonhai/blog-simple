@@ -20,7 +20,7 @@ of mock possible.
 
     $mock = \Mockery::mock(array('foo'=>1,'bar'=>2));
 
-Creates a mock object named unknown since we passed no name. However we did
+Creates an mock object named unknown since we passed no name. However we did
 pass an expectation array, a quick method of setting up methods to expect with
 their return values.
 
@@ -35,7 +35,7 @@ arrays can be passed for all mock objects as the second parameter to
 .. code-block:: php
 
     $mock = \Mockery::mock('foo', function($mock) {
-        $mock->shouldReceive('method_name');
+        $mock->shouldReceive(method_name);
     });
 
 In addition to expectation arrays, you can also pass in a closure which

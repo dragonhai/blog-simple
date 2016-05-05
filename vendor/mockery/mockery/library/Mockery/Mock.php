@@ -24,6 +24,7 @@ use Mockery\MockInterface;
 
 class Mock implements MockInterface
 {
+
     /**
      * Stores an array of all expectation directors for this mock
      *
@@ -167,21 +168,11 @@ class Mock implements MockInterface
     /**
      * Set expected method calls
      *
-     * @param string $methodName,... one or many methods that are expected to be called in this mock
+     * @param mixed
      * @return \Mockery\Expectation
      */
-    public function shouldReceive($methodName)
+    public function shouldReceive()
     {
-        if (func_num_args() < 1) {
-            throw new \InvalidArgumentException("At least one method name is required");
-        }
-
-        foreach (func_get_args() as $method) {
-            if ("" == $method) {
-                throw new \InvalidArgumentException("Received empty method name");
-            }
-        }
-
         /** @var array $nonPublicMethods */
         $nonPublicMethods = $this->getNonPublicMethods();
 
@@ -216,10 +207,10 @@ class Mock implements MockInterface
     /**
      * Shortcut method for setting an expectation that a method should not be called.
      *
-     * @param string $methodName,... one or many methods that are expected not to be called in this mock
+     * @param mixed
      * @return \Mockery\Expectation
      */
-    public function shouldNotReceive($methodName)
+    public function shouldNotReceive()
     {
         $expectation = call_user_func_array(array($this, 'shouldReceive'), func_get_args());
         $expectation->never();
@@ -609,13 +600,6 @@ class Mock implements MockInterface
          */
     }
 
-    public function __destruct()
-    {
-        /**
-         * Overrides real class destructor in case if class was created without original constructor
-         */
-    }
-
     public function mockery_getMethod($name)
     {
         foreach ($this->mockery_getMethods() as $method) {
@@ -625,46 +609,6 @@ class Mock implements MockInterface
         }
 
         return null;
-    }
-
-    /**
-     * @param string $name Method name.
-     *
-     * @return mixed Generated return value based on the declared return value of the named method.
-     */
-    public function mockery_returnValueForMethod($name)
-    {
-        if (version_compare(PHP_VERSION, '7.0.0-dev') < 0) {
-            return;
-        }
-
-        $rm = $this->mockery_getMethod($name);
-        if (!$rm || !$rm->hasReturnType()) {
-            return;
-        }
-
-        $type = (string) $rm->getReturnType();
-        switch ($type) {
-            case '':       return;
-            case 'string': return '';
-            case 'int':    return 0;
-            case 'float':  return 0.0;
-            case 'bool':   return false;
-            case 'array':  return [];
-
-            case 'callable':
-            case 'Closure':
-                return function () {};
-
-            case 'Traversable':
-            case 'Generator':
-                // Remove eval() when minimum version >=5.5
-                $generator = eval('return function () { yield; };');
-                return $generator();
-
-            default:
-                return \Mockery::mock($type);
-        }
     }
 
     public function shouldHaveReceived($method, $args = null)
@@ -757,8 +701,6 @@ class Mock implements MockInterface
             if (\Mockery::getConfiguration()->mockingNonExistentMethodsAllowed() || (method_exists($this->_mockery_partial, $method) || is_callable("parent::$method"))) {
                 if ($this->_mockery_defaultReturnValue instanceof \Mockery\Undefined) {
                     return call_user_func_array(array($this->_mockery_defaultReturnValue, $method), $args);
-                } elseif (null === $this->_mockery_defaultReturnValue) {
-                    return $this->mockery_returnValueForMethod($method);
                 } else {
                     return $this->_mockery_defaultReturnValue;
                 }

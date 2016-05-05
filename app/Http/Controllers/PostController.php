@@ -8,7 +8,9 @@ use Redirect;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\PostFormRequest;
 use Carbon\Carbon;
-use Elasticsearch;
+use Redis;
+use DB;
+use Input;
 
 use Illuminate\Http\Request;
 
@@ -24,20 +26,27 @@ class PostController extends Controller {
 	 */
 	public function index()
 	{
-		$data = [
-			'body' => [
-				'testField' => 'abc'
-			],
-			'index' => 'blog',
-			'type' => 'post',
-			'id' => '1',
-		];
 
-		$return = Elasticsearch::index($data);
+		DB::connection()->enableQueryLog();
+		// $storage = Redis::Connection();
+
+		// $popular = $storage->zRevRange('articleViews', 0, -1);
+
+		// foreach ($popular as $value) {
+		// 	$slug = str_replace('article:', '', $value);
+		// 	echo "Article " . $slug . " is popular" . "</br>";
+		// }
+		$posts = new Posts;
+		$currentPage = Input::get('page', '1');
+		// $posts = Posts::latest($currentPage);
+		$posts = $posts->cachePage($currentPage);
 		
-		$posts = Posts::latest()->paginate(5);
+
 		$title = 'Latest Posts';
+
+
 		return view('home',compact('posts', 'title'));
+
 	}
 
 	/**
@@ -47,7 +56,7 @@ class PostController extends Controller {
 	 */
 	public function create(Request $request)
 	{
-		// 
+
 		if($request->user()->canPost())
 		{
 			$published_at = Carbon::now();
@@ -79,7 +88,8 @@ class PostController extends Controller {
 		if($request->has('save'))
 		{
 			$post->active = 0;
-			$message = 'Post saved successfully';			
+			$message = 'Post saved successfully';
+
 		}			
 		else 
 		{
@@ -89,7 +99,9 @@ class PostController extends Controller {
 		$post->save();
 		if($tags) $post->tags()->sync($tags);
 
-		return redirect('edit/'.$post->slug)->withMessage($message);
+		$post->createIndexElastic();
+
+		return redirect(route('post.edit', [$post->slug]))->withMessage($message);
 	}
 
 	/**
@@ -98,15 +110,37 @@ class PostController extends Controller {
 	 * @param  int  $id
 	 * @return Response
 	 */
-	public function show($slug)
+	public function show(Request $request, $slug)
 	{
-		$post = Posts::where('slug', $slug)->first();
 
+		// $storage = Redis::Connection();
+
+		// if($storage->zScore('articleViews', 'article:'.$slug)) {
+		// 	$storage->pipeline(function($pipe) use ($slug) {
+		// 		$pipe->zIncrBy('articleViews', 1, 'article:' . $slug);
+		// 		$pipe->incr('article:' . $slug . ':views');
+		// 	});
+
+		// } else {
+		// 	$views = $storage->incr('article:' . $slug . ':views');
+		// 	$storage->zIncrBy('articleViews', 1, 'article:' . $slug);
+		// }
+
+		// $views = $storage->get('article:' . $slug . ':views');
+
+		// return 'This is an article with slug: ' . $slug . ' it has ' . $views . ' views';
+
+		$post = Posts::where('slug', $slug)->first();
 		if($post)
 		{
-			if($post->active == false)
+			if(($post->active == false && $request->user() == null)
+				|| ($request->user() 
+					&& !$request->user()->isAdmin() 
+					&& $post->active == false 
+					&& $post->author_id !== $request->user()->id)){
 				return redirect('/')->withErrors('requested page not found');
-			$comments = $post->comments;	
+			}
+			$comments = $post->comments;
 		}
 		else 
 		{
@@ -121,7 +155,7 @@ class PostController extends Controller {
 	 * @param  int  $id
 	 * @return Response
 	 */
-	public function edit(Request $request,$slug)
+	public function edit(Request $request, $slug)
 	{
 		$post = Posts::where('slug',$slug)->first();
 		$tags = Tag::lists('name', 'id');
@@ -152,7 +186,7 @@ class PostController extends Controller {
 			$title = $request->input('title');
 			$slug = str_slug($title);
 
-			$duplicate = Posts::where('slug',$slug)->first();
+			$duplicate = Posts::where('slug', $slug)->first();
 			if($duplicate)
 			{
 				if($duplicate->id != $post_id)
@@ -177,15 +211,16 @@ class PostController extends Controller {
 			{
 				$post->active = 0;
 				$message = 'Post saved successfully';
-				$landing = 'edit/'.$post->slug;
+				$landing = route('post.edit', [$post->slug]);
 			}			
 			else {
 				$post->active = 1;
 				$message = 'Post updated successfully';
-				$landing = $post->slug;
+				$landing = route('post.show', [$post->slug]);
 			}
 			$post->save();
 
+			$post->createIndexElastic();
 
 			return redirect($landing)->withMessage($message);
 		}

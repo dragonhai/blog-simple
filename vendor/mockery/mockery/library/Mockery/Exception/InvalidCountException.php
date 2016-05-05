@@ -25,6 +25,7 @@ use Mockery\Exception\RuntimeException;
 
 class InvalidCountException extends Mockery\CountValidator\Exception
 {
+
     protected $method = null;
 
     protected $expected = 0;

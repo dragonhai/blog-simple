@@ -202,6 +202,8 @@ class Worker
         }
 
         try {
+            $this->raiseBeforeJobEvent($connection, $job);
+
             // First we will fire off the job. Once it is done we will see if it will
             // be auto-deleted after processing and if so we will go ahead and run
             // the delete method on the job. Otherwise we will just keep moving.
@@ -218,13 +220,33 @@ class Worker
                 $job->release($delay);
             }
 
+            $this->raiseExceptionOccurredJobEvent($connection, $job, $e);
+
             throw $e;
         } catch (Throwable $e) {
             if (! $job->isDeleted()) {
                 $job->release($delay);
             }
 
+            $this->raiseExceptionOccurredJobEvent($connection, $job, $e);
+
             throw $e;
+        }
+    }
+
+    /**
+     * Raise the before queue job event.
+     *
+     * @param  string  $connection
+     * @param  \Illuminate\Contracts\Queue\Job  $job
+     * @return void
+     */
+    protected function raiseBeforeJobEvent($connection, Job $job)
+    {
+        if ($this->events) {
+            $data = json_decode($job->getRawBody(), true);
+
+            $this->events->fire(new Events\JobProcessing($connection, $job, $data));
         }
     }
 
@@ -240,7 +262,24 @@ class Worker
         if ($this->events) {
             $data = json_decode($job->getRawBody(), true);
 
-            $this->events->fire('illuminate.queue.after', [$connection, $job, $data]);
+            $this->events->fire(new Events\JobProcessed($connection, $job, $data));
+        }
+    }
+
+    /**
+     * Raise the exception occurred queue job event.
+     *
+     * @param  string  $connection
+     * @param  \Illuminate\Contracts\Queue\Job  $job
+     * @param  \Throwable  $exception
+     * @return void
+     */
+    protected function raiseExceptionOccurredJobEvent($connection, Job $job, $exception)
+    {
+        if ($this->events) {
+            $data = json_decode($job->getRawBody(), true);
+
+            $this->events->fire(new Events\JobExceptionOccurred($connection, $job, $data, $exception));
         }
     }
 
@@ -278,7 +317,7 @@ class Worker
         if ($this->events) {
             $data = json_decode($job->getRawBody(), true);
 
-            $this->events->fire('illuminate.queue.failed', [$connection, $job, $data]);
+            $this->events->fire(new Events\JobFailed($connection, $job, $data));
         }
     }
 
@@ -300,7 +339,7 @@ class Worker
      */
     public function stop()
     {
-        $this->events->fire('illuminate.queue.stopping');
+        $this->events->fire(new Events\WorkerStopping);
 
         die;
     }

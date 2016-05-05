@@ -28,7 +28,7 @@ class PostFormRequest extends Request {
 	public function rules()
 	{
 		return [
-			'title' => ['required', 'unique:posts', 'max:255', 'Regex:/^[\p{L}0-9 ]+$/u'],
+			'title' => ['required', 'unique:posts', 'max:255', 'Regex:/^[\p{L}0-9_\-\[\] ]+$/u'],
 			'body' => 'required',
 			'published_at' => 'required',
 		];

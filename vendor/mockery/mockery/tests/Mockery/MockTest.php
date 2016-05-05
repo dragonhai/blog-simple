@@ -23,6 +23,7 @@ use Mockery\Adapter\Phpunit\MockeryTestCase;
 
 class Mockery_MockTest extends MockeryTestCase
 {
+
     public function setup()
     {
         $this->container = new \Mockery\Container(\Mockery::getDefaultGenerator(), \Mockery::getDefaultLoader());
@@ -139,22 +140,6 @@ class Mockery_MockTest extends MockeryTestCase
     {
         $exception = Mockery::mock('Exception');
         $this->assertInstanceOf('Exception', $exception);
-    }
-
-    public function testCallingShouldReceiveWithoutAValidMethodName()
-    {
-        $mock = Mockery::mock();
-
-        $this->setExpectedException("InvalidArgumentException", "Received empty method name");
-        $mock->shouldReceive("");
-    }
-
-    /**
-     * @expectedException Mockery\Exception
-     */
-    public function testShouldThrowExceptionWithInvalidClassName()
-    {
-        $this->container->mock('ClassName.CannotContainDot');
     }
 }
 

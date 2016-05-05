@@ -8,7 +8,7 @@
 <div>
 	<ul class="list-group">
 		<li class="list-group-item">
-			Joined on {{$user->created_at->format('M d,Y \a\t h:i a') }}
+			Joined on {{$user->created_at/*->format('M d,Y \a\t h:i a')*/ }}
 		</li>
 		<li class="list-group-item panel-body">
 			<table class="table-padding">
@@ -28,7 +28,7 @@
 					<td>Published Posts</td>
 					<td>{{$posts_active_count}}</td>
 					@if($posts_active_count)
-					<td><a href="{{ url('/user/'.$user->id.'/posts')}}">Show All</a></td>
+					<td><a href="{{ route('user.posts', [$user->id])}}">Show All</a></td>
 					@endif
 				</tr>
 				<tr>
@@ -52,8 +52,8 @@
 		@if(!empty($latest_posts[0]))
 		@foreach($latest_posts as $latest_post)
 			<p>
-				<strong><a href="{{ url('/'.$latest_post->slug) }}">{{ $latest_post->title }}</a></strong>
-				<span class="well-sm">On {{ $latest_post->created_at->format('M d,Y \a\t h:i a') }}</span>
+				<strong><a href="{{ route('post.show', [$latest_post->slug]) }}">{{ $latest_post->title }}</a></strong>
+				<span class="well-sm">On {{ $latest_post->created_at/*->format('M d,Y \a\t h:i a')*/ }}</span>
 			</p>
 		@endforeach
 		@else
@@ -69,7 +69,7 @@
 		@foreach($latest_comments as $latest_comment)
 			<div class="list-group-item">
 				<p>{{ $latest_comment->body }}</p>
-				<p>On {{ $latest_comment->created_at->format('M d,Y \a\t h:i a') }}</p>
+				<p>On {{ $latest_comment->created_at/*->format('M d,Y \a\t h:i a')*/ }}</p>
 				<p>On post <a href="{{ url('/'.$latest_comment->post->slug) }}">{{ $latest_comment->post->title }}</a></p>
 			</div>
 		@endforeach

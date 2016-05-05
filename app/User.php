@@ -1,58 +1,112 @@
-<?php namespace App;
+<?php
 
-use App\BaseModel;
-use Illuminate\Auth\Authenticatable;
-use Illuminate\Auth\Passwords\CanResetPassword;
-use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
-use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
+namespace App;
 
-class User extends BaseModel implements AuthenticatableContract, CanResetPasswordContract {
+use Validator;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
-    use Authenticatable, CanResetPassword;
+class User extends Authenticatable
+{
 
     /**
-     * The database table used by the model.
+     * This is a useful switch to temporarily turn of automatic model validation.
      *
-     * @var string
+     * @var boolean
      */
-    protected $table = 'users';
+    protected $autoValidate = true;
+    
+    protected $rules = [
+        'name' => 'required|min:6|max:50',
+        'email' => 'required|email|max:255|unique:users',
+        'password' => 'required|min:6',
+    ];
 
+    /**
+     * Bag message errors when validate
+     */
+    protected $errors;
+
+    protected static function boot()
+    {
+        // This is an important call, makes sure that the model gets booted properly!
+        parent::boot();
+        
+        // You can also replace this with static::creating or static::updating
+        // if you want to call specific validation functions for each case.
+        static::saving(function($model)
+        {
+            if($model->autoValidate && $model->rules())
+            {
+                // If autovalidate is true, validate the model on create and update.
+                return $model->validate();
+            }
+        });
+    }
+
+    public function validate()
+    {
+        // make a new validator object
+        $validator = Validator::make($this->toArray(), $this->rules());
+
+        // check for failure
+        if ($validator->fails())
+        {
+            // set errors and return false
+            $this->errors = $validator->errors();
+            return false;
+        }
+
+        // validation pass
+        return true;
+    }
+
+    public function errors()
+    {
+        return $this->errors;
+    }
+
+    public function rules()
+    {
+        return $this->rules;
+    }
+
+    public function getAutoValidate()
+    {
+        return $this->autoValidate;
+    }
+
+    public function setAutoValidate($hasAutoValidate)
+    {
+        $this->autoValidate = $hasAutoValidate;
+    }
+    
     /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
-    protected $fillable = ['name', 'email', 'password'];
+    protected $fillable = [
+        'name', 'email', 'password',
+    ];
 
     /**
      * The attributes excluded from the model's JSON form.
      *
      * @var array
      */
-    protected $hidden = ['password', 'remember_token'];
-
-    /**
-     * The rules to use for the model validation.
-     * Define your validation rules here.
-     *
-     * @var array
-     */
-    protected $rules = [
-        'name' => 'required|max:255',
-        'email' => 'required|email|max:255|unique:users',
-        'password' => 'required|min:6',
+    protected $hidden = [
+        'password', 'remember_token',
     ];
 
-    
     /**
      * user has many posts
      *
      */
     public function posts()
     {
-        return $this->hasMany('App\Posts','author_id');
+        return $this->hasMany('App\Posts', 'author_id');
     }
-    
+
     /**
      * user has many comments
      *
@@ -61,7 +115,7 @@ class User extends BaseModel implements AuthenticatableContract, CanResetPasswor
     {
         return $this->hasMany('App\Comments','from_user');
     }
-    
+
     /**
      * Check user can post
      *
@@ -71,7 +125,7 @@ class User extends BaseModel implements AuthenticatableContract, CanResetPasswor
     {
         return $this->hasRole(['author', 'admin']);
     }
-    
+ 
     /**
      * Check user is admin
      *
@@ -81,7 +135,7 @@ class User extends BaseModel implements AuthenticatableContract, CanResetPasswor
     {
         return $this->hasRole('admin');
     }
-
+    
     /**
      * Check role user
      *
@@ -106,4 +160,5 @@ class User extends BaseModel implements AuthenticatableContract, CanResetPasswor
 
         return !! $role->intersect($roles)->count();
     }
+
 }

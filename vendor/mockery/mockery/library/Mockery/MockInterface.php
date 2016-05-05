@@ -22,6 +22,7 @@ namespace Mockery;
 
 interface MockInterface
 {
+
     /**
      * Alternative setup method to constructor
      *
@@ -34,18 +35,18 @@ interface MockInterface
     /**
      * Set expected method calls
      *
-     * @param string $methodName,... one or many methods that are expected to be called in this mock
+     * @param mixed ...
      * @return \Mockery\Expectation
      */
-    public function shouldReceive($methodName);
+    public function shouldReceive();
 
     /**
      * Shortcut method for setting an expectation that a method should not be called.
      *
-     * @param string $methodName,... one or many methods that are expected not to be called in this mock
+     * @param mixed ...
      * @return \Mockery\Expectation
      */
-    public function shouldNotReceive($methodName);
+    public function shouldNotReceive();
 
     /**
      * Allows additional methods to be mocked that do not explicitly exist on mocked class

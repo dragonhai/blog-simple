@@ -22,7 +22,6 @@ use Mockery\ExpectationInterface;
 use Mockery\Generator\CachingGenerator;
 use Mockery\Generator\Generator;
 use Mockery\Generator\MockConfigurationBuilder;
-use Mockery\Generator\StringManipulation\Pass\RemoveDestructorPass;
 use Mockery\Generator\StringManipulationGenerator;
 use Mockery\Generator\StringManipulation\Pass\CallTypeHintPass;
 use Mockery\Generator\StringManipulation\Pass\ClassNamePass;
@@ -62,11 +61,6 @@ class Mockery
      * @var \Mockery\Loader\Loader
      */
     protected static $_loader;
-
-    /**
-     * @var array
-     */
-    private static $_filesToCleanUp = [];
 
     /**
      * Static shortcut to \Mockery\Container::mock().
@@ -141,10 +135,6 @@ class Mockery
      */
     public static function close()
     {
-        foreach (self::$_filesToCleanUp as $fileName) {
-            @unlink($fileName);
-        }
-
         if (is_null(self::$_container)) {
             return;
         }
@@ -206,7 +196,6 @@ class Mockery
             new MethodDefinitionPass(),
             new RemoveUnserializeForInternalSerializableClassesPass(),
             new RemoveBuiltinMethodsThatAreFinalPass(),
-            new RemoveDestructorPass(),
         ));
 
         return new CachingGenerator($generator);
@@ -440,19 +429,16 @@ class Mockery
 
         if (is_array($argument)) {
             if ($depth === 1) {
-                $argument = '[...]';
+                $argument = 'array(...)';
             } else {
                 $sample = array();
                 foreach ($argument as $key => $value) {
-                    $key = is_int($key) ? $key : "'$key'";
-                    $value = self::formatArgument($value, $depth + 1);
-                    $sample[] = "$key => $value";
+                    $sample[$key] = self::formatArgument($value, $depth + 1);
                 }
-
-                $argument = "[".implode(", ", $sample)."]";
+                $argument = preg_replace("{\s}", '', var_export($sample, true));
             }
 
-            return ((strlen($argument) > 1000) ? substr($argument, 0, 1000).'...]' : $argument);
+            return ((strlen($argument) > 1000) ? substr($argument, 0, 1000).'...)' : $argument);
         }
 
         if (is_bool($argument)) {
@@ -467,7 +453,9 @@ class Mockery
             return 'NULL';
         }
 
-        return "'".(string) $argument."'";
+        $argument = (string) $argument;
+
+        return $depth === 0 ? '"' . $argument . '"' : $argument;
     }
 
     /**
@@ -747,15 +735,5 @@ class Mockery
     private static function noMoreElementsInChain(array $methodNames)
     {
         return empty($methodNames);
-    }
-
-    /**
-     * Register a file to be deleted on tearDown.
-     *
-     * @param string $fileName
-     */
-    public static function registerFileForCleanUp($fileName)
-    {
-        self::$_filesToCleanUp[] = $fileName;
     }
 }

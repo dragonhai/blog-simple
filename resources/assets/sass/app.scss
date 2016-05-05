@@ -1,0 +1,14 @@
+@import "node_modules/bootstrap-sass/assets/stylesheets/bootstrap";
+
+ul, ol {
+    list-style-type: none;
+}
+.btn-primary {
+    a {
+        color: #fff;
+    }
+}
+img {
+    max-width: 100%;
+    height: auto;
+}

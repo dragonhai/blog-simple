@@ -24,6 +24,7 @@ use Mockery\Adapter\Phpunit\MockeryTestCase;
 
 class ContainerTest extends MockeryTestCase
 {
+
     /** @var Mockery\Container */
     private $container;
 
@@ -659,32 +660,6 @@ class ContainerTest extends MockeryTestCase
         Mockery::resetContainer();
     }
 
-    public function testInstantiationOfInstanceMockImportsDefaultExpectations()
-    {
-        Mockery::setContainer($this->container);
-        $m = $this->container->mock('overload:MyNamespace\MyClass6');
-        $m->shouldReceive('foo')->andReturn('bar')->byDefault();
-        $instance = new MyNamespace\MyClass6;
-
-        $this->assertEquals('bar', $instance->foo());
-
-        Mockery::resetContainer();
-    }
-
-    public function testInstantiationOfInstanceMockImportsDefaultExpectationsInTheCorrectOrder()
-    {
-        Mockery::setContainer($this->container);
-        $m = $this->container->mock('overload:MyNamespace\MyClass6');
-        $m->shouldReceive('foo')->andReturn(1)->byDefault();
-        $m->shouldReceive('foo')->andReturn(2)->byDefault();
-        $m->shouldReceive('foo')->andReturn(3)->byDefault();
-        $instance = new MyNamespace\MyClass6;
-
-        $this->assertEquals(3, $instance->foo());
-
-        Mockery::resetContainer();
-    }
-
     public function testInstantiationOfInstanceMocksIgnoresVerificationOfOriginMock()
     {
         Mockery::setContainer($this->container);
@@ -760,17 +735,6 @@ class ContainerTest extends MockeryTestCase
             Mockery::on(function (&$a) {$a += 1;return true;}),
             Mockery::any()
         );
-        $a = 1;
-        $b = 1;
-        $m->foo($a, $b);
-        $this->assertEquals(2, $a);
-        $this->assertEquals(1, $b);
-    }
-
-    public function testMethodParamsPassedByReferenceThroughWithArgsHaveReferencePreserved()
-    {
-        $m = $this->container->mock('MockeryTestRef1');
-        $m->shouldReceive('foo')->withArgs(function (&$a, $b) {$a += 1; $b += 1; return true;});
         $a = 1;
         $b = 1;
         $m->foo($a, $b);
@@ -1202,7 +1166,7 @@ class ContainerTest extends MockeryTestCase
 
     /**
      * @expectedException Mockery\Exception\NoMatchingExpectationException
-     * @expectedExceptionMessage MyTestClass::foo(['myself' => [...]])
+     * @expectedExceptionMessage MyTestClass::foo(array('myself'=>'array(...)',))
      */
     public function testHandlesMethodWithArgumentExpectationWhenCalledWithCircularArray()
     {
@@ -1217,7 +1181,7 @@ class ContainerTest extends MockeryTestCase
 
     /**
      * @expectedException Mockery\Exception\NoMatchingExpectationException
-     * @expectedExceptionMessage MyTestClass::foo(['a_scalar' => 2, 'an_array' => [...]])
+     * @expectedExceptionMessage MyTestClass::foo(array('a_scalar'=>2,'an_array'=>'array(...)',))
      */
     public function testHandlesMethodWithArgumentExpectationWhenCalledWithNestedArray()
     {
@@ -1233,7 +1197,7 @@ class ContainerTest extends MockeryTestCase
 
     /**
      * @expectedException Mockery\Exception\NoMatchingExpectationException
-     * @expectedExceptionMessage MyTestClass::foo(['a_scalar' => 2, 'an_object' => object(stdClass)])
+     * @expectedExceptionMessage MyTestClass::foo(array('a_scalar'=>2,'an_object'=>'object(stdClass)',))
      */
     public function testHandlesMethodWithArgumentExpectationWhenCalledWithNestedObject()
     {
@@ -1249,7 +1213,7 @@ class ContainerTest extends MockeryTestCase
 
     /**
      * @expectedException Mockery\Exception\NoMatchingExpectationException
-     * @expectedExceptionMessage MyTestClass::foo(['a_scalar' => 2, 'a_closure' => object(Closure)])
+     * @expectedExceptionMessage MyTestClass::foo(array('a_scalar'=>2,'a_closure'=>'object(Closure
      */
     public function testHandlesMethodWithArgumentExpectationWhenCalledWithNestedClosure()
     {
@@ -1266,7 +1230,7 @@ class ContainerTest extends MockeryTestCase
 
     /**
      * @expectedException Mockery\Exception\NoMatchingExpectationException
-     * @expectedExceptionMessage MyTestClass::foo(['a_scalar' => 2, 'a_resource' => resource(...)])
+     * @expectedExceptionMessage MyTestClass::foo(array('a_scalar'=>2,'a_resource'=>'resource(...)',))
      */
     public function testHandlesMethodWithArgumentExpectationWhenCalledWithNestedResource()
     {
@@ -1278,19 +1242,6 @@ class ContainerTest extends MockeryTestCase
         $mock->shouldReceive('foo')->with(array('yourself' => 21));
 
         $mock->foo($testArray);
-    }
-
-    public function testExceptionOutputMakesBooleansLookLikeBooleans()
-    {
-        $mock = $this->container->mock('MyTestClass');
-        $mock->shouldReceive("foo")->with(123);
-
-        $this->setExpectedException(
-            "Mockery\Exception\NoMatchingExpectationException",
-            "MyTestClass::foo(true, false, [0 => true, 1 => false])"
-        );
-
-        $mock->foo(true, false, [true, false]);
     }
 
     /**
@@ -1321,26 +1272,6 @@ class ContainerTest extends MockeryTestCase
     {
         $mock = $this->container->mock("ArrayObject");
         $this->assertInstanceOf("Serializable", $mock);
-    }
-
-    /**
-     * @dataProvider classNameProvider
-     */
-    public function testIsValidClassName($expected, $className)
-    {
-        $container = new \Mockery\Container;
-        $this->assertSame($expected, $container->isValidClassName($className));
-    }
-
-    public function classNameProvider()
-    {
-        return array(
-            array(false, ' '), // just a space
-            array(false, 'ClassName.WithDot'),
-            array(false, '\\\\TooManyBackSlashes'),
-            array(true,  'Foo'),
-            array(true,  '\\Foo\\Bar'),
-        );
     }
 }
 

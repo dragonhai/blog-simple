@@ -24,6 +24,7 @@ use Mockery;
 
 class NoMatchingExpectationException extends Mockery\Exception
 {
+
     protected $method = null;
 
     protected $actual = array();

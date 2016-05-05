@@ -7,6 +7,7 @@ use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Config\Repository as RepositoryContract;
+use Illuminate\Log;
 
 class LoadConfiguration
 {
@@ -37,6 +38,10 @@ class LoadConfiguration
         if (! isset($loadedFromCache)) {
             $this->loadConfigurationFiles($app, $config);
         }
+
+        $app->detectEnvironment(function () use ($config) {
+            return $config->get('app.env', 'production');
+        });
 
         date_default_timezone_set($config['app.timezone']);
 

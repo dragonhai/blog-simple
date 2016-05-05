@@ -4,8 +4,10 @@ namespace Illuminate\Pagination;
 
 use Closure;
 use ArrayIterator;
+use Illuminate\Support\Collection;
+use Illuminate\Contracts\Support\Htmlable;
 
-abstract class AbstractPaginator
+abstract class AbstractPaginator implements Htmlable
 {
     /**
      * All of the items being paginated.
@@ -127,8 +129,9 @@ abstract class AbstractPaginator
             $parameters = array_merge($this->query, $parameters);
         }
 
-        return $this->path.'?'
-                        .urldecode(http_build_query($parameters, null, '&'))
+        return $this->path
+                        .(str_contains($this->path, '?') ? '&' : '?')
+                        .http_build_query($parameters, null, '&')
                         .$this->buildFragment();
     }
 
@@ -235,6 +238,10 @@ abstract class AbstractPaginator
      */
     public function firstItem()
     {
+        if (count($this->items) === 0) {
+            return;
+        }
+
         return ($this->currentPage - 1) * $this->perPage + 1;
     }
 
@@ -245,6 +252,10 @@ abstract class AbstractPaginator
      */
     public function lastItem()
     {
+        if (count($this->items) === 0) {
+            return;
+        }
+
         return $this->firstItem() + $this->count() - 1;
     }
 
@@ -419,6 +430,19 @@ abstract class AbstractPaginator
     }
 
     /**
+     * Set the paginator's underlying collection.
+     *
+     * @param  \Illuminate\Support\Collection  $collection
+     * @return $this
+     */
+    public function setCollection(Collection $collection)
+    {
+        $this->items = $collection;
+
+        return $this;
+    }
+
+    /**
      * Determine if the given item exists.
      *
      * @param  mixed  $key
@@ -464,6 +488,16 @@ abstract class AbstractPaginator
     }
 
     /**
+     * Render the contents of the paginator to HTML.
+     *
+     * @return string
+     */
+    public function toHtml()
+    {
+        return (string) $this->render();
+    }
+
+    /**
      * Make dynamic calls into the collection.
      *
      * @param  string  $method
@@ -482,6 +516,6 @@ abstract class AbstractPaginator
      */
     public function __toString()
     {
-        return $this->render();
+        return (string) $this->render();
     }
 }

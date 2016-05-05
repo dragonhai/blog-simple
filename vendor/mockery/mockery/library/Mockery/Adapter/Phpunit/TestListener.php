@@ -22,6 +22,7 @@ namespace Mockery\Adapter\Phpunit;
 
 class TestListener implements \PHPUnit_Framework_TestListener
 {
+
     /**
      * After each test, perform Mockery verification tasks and cleanup the
      * statically stored Mockery container for the next test.
@@ -65,8 +66,6 @@ class TestListener implements \PHPUnit_Framework_TestListener
     public function addError(\PHPUnit_Framework_Test $test, \Exception $e, $time)
     {
     }
-
-    public function addWarning(\PHPUnit_Framework_Test $test, \PHPUnit_Framework_Warning $e, $time) {}
 
     public function addFailure(\PHPUnit_Framework_Test $test, \PHPUnit_Framework_AssertionFailedError $e, $time)
     {

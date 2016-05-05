@@ -14,7 +14,7 @@ Edit Post
 	}); 
 </script>
 
-{!! Form::open(['url' => '/update']) !!}
+{!! Form::open(['url' => route('post.update')]) !!}
 	<input type="hidden" name="post_id" value="{{ $post->id }}{{ old('post_id') }}">
 	<div class="form-group">
 		{{--*/ $title = !old('title') ? $post->title : old('title') /*--}}

@@ -22,6 +22,7 @@ namespace Mockery\Matcher;
 
 class Closure extends MatcherAbstract
 {
+
     /**
      * Check if the actual value matches the expected.
      *

@@ -22,6 +22,7 @@ namespace Mockery;
 
 class ExpectationDirector
 {
+
     /**
      * Method name the director is directing
      *
@@ -169,7 +170,7 @@ class ExpectationDirector
     protected function _findExpectationIn(array $expectations, array $args)
     {
         foreach ($expectations as $exp) {
-            if ($exp->isEligible() && $exp->matchArgs($args)) {
+            if ($exp->matchArgs($args) && $exp->isEligible()) {
                 return $exp;
             }
         }
@@ -188,16 +189,6 @@ class ExpectationDirector
     public function getExpectations()
     {
         return $this->_expectations;
-    }
-
-    /**
-     * Return all expectations assigned to this director
-     *
-     * @return array
-     */
-    public function getDefaultExpectations()
-    {
-        return $this->_defaults;
     }
 
     /**

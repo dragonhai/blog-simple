@@ -24,6 +24,7 @@ use Mockery;
 
 class InvalidOrderException extends Mockery\Exception
 {
+
     protected $method = null;
 
     protected $expected = 0;

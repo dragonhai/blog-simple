@@ -22,6 +22,7 @@ namespace Mockery;
 
 class Expectation implements ExpectationInterface
 {
+
     /**
      * Mock object to which this expectation belongs
      *
@@ -216,8 +217,6 @@ class Expectation implements ExpectationInterface
         } elseif (count($this->_returnQueue) > 0) {
             return current($this->_returnQueue);
         }
-
-        return $this->_mock->mockery_returnValueForMethod($this->_name);
     }
 
     /**
@@ -284,14 +283,7 @@ class Expectation implements ExpectationInterface
         if (empty($this->_expectedArgs) && !$this->_noArgsExpectation) {
             return true;
         }
-        $expectedArgsCount = count($this->_expectedArgs);
-        if ($expectedArgsCount === 1 && ($this->_expectedArgs[0] instanceof \Mockery\Matcher\MultiArgumentClosure)) {
-            if ($this->_matchArg($this->_expectedArgs[0], $args)) {
-                return true;
-            }
-            return false;
-        }
-        if (count($args) !== $expectedArgsCount) {
+        if (count($args) !== count($this->_expectedArgs)) {
             return false;
         }
         $argCount = count($args);
@@ -338,7 +330,7 @@ class Expectation implements ExpectationInterface
         if ($expected instanceof \Mockery\Matcher\MatcherAbstract) {
             return $expected->match($actual);
         }
-        if ($expected instanceof \Hamcrest\Matcher || $expected instanceof \Hamcrest_Matcher) {
+        if (is_a($expected, '\Hamcrest\Matcher') || is_a($expected, '\Hamcrest_Matcher')) {
             return $expected->matches($actual);
         }
         return false;
@@ -358,22 +350,15 @@ class Expectation implements ExpectationInterface
     /**
      * Expected arguments for the expectation passed as an array
      *
-     * @param array|\Closure $argsOrClosure
+     * @param array $args
      * @return self
      */
-    public function withArgs($argsOrClosure)
+    public function withArgs(array $args)
     {
-        if (is_array($argsOrClosure)) {
-            if (empty($argsOrClosure)) {
-                return $this->withNoArgs();
-            }
-            $this->_expectedArgs = $argsOrClosure;
-        } elseif (is_object($argsOrClosure) && ($argsOrClosure instanceof \Closure)) {
-            $this->_expectedArgs = [new \Mockery\Matcher\MultiArgumentClosure($argsOrClosure)];
-        } else {
-            throw new \InvalidArgumentException(sprintf('Call to %s with an invalid argument (%s), only array and '.
-                'closure are allowed', __METHOD__, $argsOrClosure));
+        if (empty($args)) {
+            return $this->withNoArgs();
         }
+        $this->_expectedArgs = $args;
         $this->_noArgsExpectation = false;
         return $this;
     }
@@ -470,23 +455,13 @@ class Expectation implements ExpectationInterface
         return $this;
     }
 
-    public function andReturnFalse()
-    {
-        return $this->andReturn(false);
-    }
-
-    public function andReturnTrue()
-    {
-        return $this->andReturn(true);
-    }
-
     /**
      * Set Exception class and arguments to that class to be thrown
      *
-     * @param string|\Exception $exception
+     * @param string $exception
      * @param string $message
      * @param int $code
-     * @param \Exception $previous
+     * @param Exception $previous
      * @return self
      */
     public function andThrow($exception, $message = '', $code = 0, \Exception $previous = null)

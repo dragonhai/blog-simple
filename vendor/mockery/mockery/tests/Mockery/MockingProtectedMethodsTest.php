@@ -25,6 +25,7 @@ use Mockery\Adapter\Phpunit\MockeryTestCase;
 
 class MockingProtectedMethodsTest extends MockeryTestCase
 {
+
     public function setup()
     {
         $this->container = new \Mockery\Container;

@@ -4,7 +4,7 @@
 	@if($post)
 		{{ $post->title }}
 		@if(!Auth::guest() && ($post->author_id == Auth::user()->id || Auth::user()->isAdmin()))
-			<button class="btn" style="float: right"><a href="{{ url('edit/'.$post->slug)}}">Edit Post</a></button>
+			<button class="btn btn-primary pull-right"><a href="{{ route('post.edit', [$post->slug])}}">Edit Post</a></button>
 		@endif
 	@else
 		Page does not exist
@@ -28,7 +28,7 @@
 		<p>Login to Comment</p>
 	@else
 		<div class="panel-body">
-			{!! Form::open(['url' => '/comment/add']) !!}
+			{!! Form::open(['url' => route('comment.add')]) !!}
 			<!-- <form method="post" action="/comment/add"> -->
 				<!-- <input type="hidden" name="_token" value="{{ csrf_token() }}"> -->
 				<input type="hidden" name="on_post" value="{{ $post->id }}">

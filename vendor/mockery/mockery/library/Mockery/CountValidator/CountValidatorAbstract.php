@@ -22,6 +22,7 @@ namespace Mockery\CountValidator;
 
 abstract class CountValidatorAbstract
 {
+
     /**
      * Expectation for which this validator is assigned
      *
