@@ -3,7 +3,8 @@
 .env
 
 # ignore vendor
-./vendor
+vendor/
+storage/
 
 # ignore node_modules
 ./node_modules
